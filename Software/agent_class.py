@@ -20,7 +20,7 @@ from torchsummary import summary
 import gym
 from datetime import datetime
 
-from gsde_class import GSDE
+from gsde_class import gSDE
 
 #getting cute unique name for checkpoint
 def get_checkpoint_name(epoch_v):
