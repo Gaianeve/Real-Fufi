@@ -15,6 +15,7 @@ from gym import spaces
 from torch import nn
 
 from stable_baselines3.common.distributions import Distribution
+from torch.distributions import Bernoulli, Categorical, Normal
 
 """# State Dependent Noise Distribution (gSDE) 🌵
 🪄 Distribution class for using generalized State Dependent Exploration (gSDE).
