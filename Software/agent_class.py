@@ -54,50 +54,50 @@ Paper [here](https://arxiv.org/abs/2005.05719)
 
 # agent class
 class Agent(nn.Module):
-    def __init__(self, envs, use_sde):
-        super().__init__()
+  def __init__(self, envs, use_sde):
+      super().__init__()
 
-        #gSDE flag
-        self.use_sde = use_sde
+      #gSDE flag
+      self.use_sde = use_sde
 
-        #actor critic NN
-        self.critic = nn.Sequential(
-            layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, 1), std=1.0),
-        )
-        self.actor_mean = nn.Sequential(
-            layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, np.prod(envs.single_action_space.shape)), std=0.01),
-        )
-        self.actor_logstd = nn.Parameter(torch.zeros(1, np.prod(envs.single_action_space.shape)))
-        #learn log of standard dev
+      #actor critic NN
+      self.critic = nn.Sequential(
+          layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
+          nn.Tanh(),
+          layer_init(nn.Linear(64, 64)),
+          nn.Tanh(),
+          layer_init(nn.Linear(64, 1), std=1.0),
+      )
+      self.actor_mean = nn.Sequential(
+          layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
+          nn.Tanh(),
+          layer_init(nn.Linear(64, 64)),
+          nn.Tanh(),
+          layer_init(nn.Linear(64, np.prod(envs.single_action_space.shape)), std=0.01),
+      )
+      self.actor_logstd = nn.Parameter(torch.zeros(1, np.prod(envs.single_action_space.shape)))
+      #learn log of standard dev
 
-    def get_value(self, x):
-        return self.critic(x)
+  def get_value(self, x):
+      return self.critic(x)
 
-    def get_action_and_value(self, x, action=None):
-        action_mean = self.actor_mean(x)
-        action_logstd = self.actor_logstd.expand_as(action_mean) #match dimention of action mean
+  def get_action_and_value(self, x, action=None):
+      action_mean = self.actor_mean(x)
+      action_logstd = self.actor_logstd.expand_as(action_mean) #match dimention of action mean
 
-        if self.use_sde:
-          #sample from SDE distribution
-          probs = gSDE()
-        else:
-          #sample from standard gaussian
-          action_std = torch.exp(action_logstd)
-          probs = Normal(action_mean, action_std)
+      if self.use_sde:
+        #sample from SDE distribution
+        probs = gSDE()
+      else:
+        #sample from standard gaussian
+        action_std = torch.exp(action_logstd)
+        probs = Normal(action_mean, action_std)
 
-        if action is None:
-            action = probs.sample()
-        return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), self.critic(x)
+      if action is None:
+          action = probs.sample()
+      return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), self.critic(x)
 
-  # NN summary
+    # NN summary
   def print_summary(self, envs):
     print('Actor summary')
     print(summary(self.actor, envs.single_observation_space.shape))
