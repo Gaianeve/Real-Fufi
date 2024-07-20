@@ -16,9 +16,8 @@ import time
 from pathlib import Path
 from typing import Optional, Union
 
-import gymnasium as gym
+import gym
 import numpy as np
-from gymnasium.spaces import Box
 
 import wandb
 
