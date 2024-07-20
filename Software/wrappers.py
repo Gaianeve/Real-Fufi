@@ -71,11 +71,9 @@ class HistoryWrapper(gym.Wrapper):
             info["continuity_cost"] = continuity_cost
 
         return obs.flatten(), reward, done, info
-    def reset(
-        self,
-        seed: Optional[int] = None,
-        options: Optional[dict] = None,
-      ) -> Tuple[np.ndarray, dict]:
+
+    
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None,) -> Tuple[np.ndarray, dict]:
         """Reset the environment and the history."""
         self.history = self._make_history()
         self.history.pop(0)
