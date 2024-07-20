@@ -172,7 +172,7 @@ class gSDE(Distribution):
 
 
     def get_distribution(
-        self: gSDE, mean_actions: th.Tensor, log_std: th.Tensor, latent_sde: th.Tensor
+        self, mean_actions: th.Tensor, log_std: th.Tensor, latent_sde: th.Tensor
     ) -> th.Tensor:
         """
         Create the distribution given its parameters (mean, std)
