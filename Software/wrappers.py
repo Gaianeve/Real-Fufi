@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import gym
+from gym.spaces import Box
 import numpy as np
 
 import wandb
