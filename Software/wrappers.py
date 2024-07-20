@@ -72,18 +72,18 @@ class HistoryWrapper(gym.Wrapper):
 
         return obs.flatten(), reward, done, info
 
-    def reset(
-        self,
-        seed: Optional[int] = None,
-        options: Optional[dict] = None,
-    ):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple[np.ndarray, dict]:
+        """Reset the environment and the history."""
         self.history = self._make_history()
         self.history.pop(0)
-        obs = np.concatenate(
-            [
-                self.env.reset(seed=seed, options=options)[0],
-                np.zeros_like(self.env.action_space.low),
-            ]
-        )
+        result = self.env.reset(seed=seed, options=options)
+        if isinstance(result, tuple):
+            obs = result[0]
+            info = result[1] if len(result) > 1 else {}
+        else:
+            obs = result
+            info = {}
+        
+        obs = np.concatenate([obs, np.zeros_like(self.env.action_space.low)])
         self.history.append(obs)
-        return np.array(self.history, dtype=np.float32).flatten(), {}
+        return np.array(self.history, dtype=np.float32).flatten(), info
