@@ -80,6 +80,13 @@ class HistoryWrapper(gym.Wrapper):
     ):
         self.history = self._make_history()
         self.history.pop(0)
+        print('what i concatenate')
+        print(self.env.reset(seed=seed, options=options)[0])
+        print(np.zeros_like(self.env.action_space.low))
+
+        print('shapes')
+        print( self.env.reset(seed=seed, options=options)[0].shape)
+        print( np.zeros_like(self.env.action_space.low).shape)
         obs = np.concatenate(
             [
                 self.env.reset(seed=seed, options=options)[0],
