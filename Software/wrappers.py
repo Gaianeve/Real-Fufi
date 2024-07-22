@@ -34,8 +34,6 @@ class HistoryWrapper(gym.Wrapper):
         # Initialize step_low and step_high
         self.step_low = np.concatenate([self.observation_space.low, self.action_space.low])
         self.step_high = np.concatenate([self.observation_space.high, self.action_space.high])
-        print('self.step_low:', self.step_low)
-        print('self.step_high:', self.step_high)
 
         # Stack for each step
         obs_low = np.tile(self.step_low, (self.steps, 1))
@@ -89,4 +87,4 @@ class HistoryWrapper(gym.Wrapper):
       self.history[0] = obs  # Imposta la prima osservazione
 
       # Restituisce la storia come array appiattito
-      return np.array(self.history, dtype=np.float32).flatten(), {}
+      return np.array(self.history, dtype=np.float32).flatten()
