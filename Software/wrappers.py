@@ -24,12 +24,12 @@ import numpy as np
 class HistoryWrapper(gym.Wrapper):
     """Track history of observations for a given number of steps. Initial steps are zero-filled."""
 
-    def __init__(self, env: gym.Env, steps: int, use_continuity_cost: bool):
+    def __init__(self, env, steps, beta, use_continuity_cost):
         super().__init__(env)
         assert steps > 1, "steps must be > 1"
         self.steps = steps
         self.use_continuity_cost = use_continuity_cost
-        self.beta = 1  # weight of continuity cost
+        self.beta = beta  # weight of continuity cost
 
         # Initialize step_low and step_high
         self.step_low = np.concatenate([self.observation_space.low, self.action_space.low])
