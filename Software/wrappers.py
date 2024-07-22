@@ -20,28 +20,29 @@ import gym
 from gym.spaces import Box
 import numpy as np
 
-import wandb
-
 
 class HistoryWrapper(gym.Wrapper):
-    """Track history of observations for given amount of steps. Initial steps are zero-filled."""
+    """Track history of observations for a given number of steps. Initial steps are zero-filled."""
 
     def __init__(self, env: gym.Env, steps: int, use_continuity_cost: bool):
-        super().__init__(env) # env is the parent class
+        super().__init__(env)
         assert steps > 1, "steps must be > 1"
         self.steps = steps
         self.use_continuity_cost = use_continuity_cost
-        self.beta =1 #weight of continuity cost
+        self.beta = 1  # weight of continuity cost
 
-        # concat obs with action
+        # Initialize step_low and step_high
         self.step_low = np.concatenate([self.observation_space.low, self.action_space.low])
         self.step_high = np.concatenate([self.observation_space.high, self.action_space.high])
+        print('self.step_low:', self.step_low)
+        print('self.step_high:', self.step_high)
 
-        # stack for each step
+        # Stack for each step
         obs_low = np.tile(self.step_low, (self.steps, 1))
         obs_high = np.tile(self.step_high, (self.steps, 1))
 
         self.observation_space = Box(low=obs_low.flatten(), high=obs_high.flatten())
+        print('Observation Space Dimension:', self.observation_space.shape)
 
         self.history = self._make_history()
 
@@ -49,12 +50,9 @@ class HistoryWrapper(gym.Wrapper):
         return [np.zeros_like(self.step_low) for _ in range(self.steps)]
 
     def _continuity_cost(self, obs):
-        # TODO compute continuity cost for all steps and average?
-        # and compare smoothness between training run, and viz smoothness over time
-        action = obs[-1][-1]
-        last_action = obs[-2][-1]
+        action = obs[-1][-self.action_space.shape[0]:]
+        last_action = obs[-2][-self.action_space.shape[0]:]
         continuity_cost = np.power((action - last_action), 2).sum()
-
         return continuity_cost
 
     def step(self, action):
@@ -67,24 +65,28 @@ class HistoryWrapper(gym.Wrapper):
 
         if self.use_continuity_cost:
             continuity_cost = self._continuity_cost(obs)
-            reward -= self.beta*continuity_cost
+            reward -= self.beta * continuity_cost
             info["continuity_cost"] = continuity_cost
 
         return obs.flatten(), reward, done, info
 
-    
     def reset(
-        self,
-        seed: Optional[int] = None,
-        options: Optional[dict] = None,
+    self,
+    seed: Optional[int] = None,
+    options: Optional[dict] = None,
     ):
-        self.history = self._make_history()
-        self.history.pop(0)
-        obs = np.concatenate(
-            [
-                self.env.reset(seed=seed, options=options)[0],
-                np.zeros_like(self.env.action_space.low),
-            ]
-        )
-        self.history.append(obs)
-        return np.array(self.history, dtype=np.float32).flatten(), {}
+      # Chiama il reset dell'ambiente per ottenere l'osservazione iniziale
+      obs = self.env.reset(seed=seed, options=options)
+
+      # Assicurati che obs abbia la forma corretta (aggiungi zeri per le azioni)
+      obs = np.concatenate([
+          obs,
+          np.zeros_like(self.env.action_space.low)
+      ])
+
+      # Imposta self.history con la forma corretta
+      self.history = [np.zeros_like(obs) for _ in range(self.steps)]
+      self.history[0] = obs  # Imposta la prima osservazione
+
+      # Restituisce la storia come array appiattito
+      return np.array(self.history, dtype=np.float32).flatten(), {}
