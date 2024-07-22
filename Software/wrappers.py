@@ -40,7 +40,6 @@ class HistoryWrapper(gym.Wrapper):
         obs_high = np.tile(self.step_high, (self.steps, 1))
 
         self.observation_space = Box(low=obs_low.flatten(), high=obs_high.flatten())
-        print('Observation Space Dimension:', self.observation_space.shape)
 
         self.history = self._make_history()
 
