@@ -25,7 +25,7 @@ def make_env(gym_id, seed, idx, capture_video, run_name):
     def thunk():
         env = gym.make(gym_id)
         env = gym.wrappers.RecordEpisodeStatistics(env)
-        env = HistoryWrapper(env, 4, True)
+        env = HistoryWrapper(env, 4, 0.4, True)
         if capture_video:
             if idx == 0:
               #record video every ten episodes
