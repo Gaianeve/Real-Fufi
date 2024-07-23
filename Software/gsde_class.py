@@ -244,3 +244,6 @@ class gSDE(Distribution):
         actions = self.actions_from_params(mean_actions, log_std, latent_sde)
         log_prob = self.log_prob(actions)
         return actions, log_prob
+
+    def proba_distribution_net(self):
+    pass
