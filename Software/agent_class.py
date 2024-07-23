@@ -87,7 +87,8 @@ class Agent(nn.Module):
 
       if self.use_sde:
         #sample from SDE distribution
-        probs = gSDE()
+        action_dim = np.prod(envs.single_action_space.shape)
+        probs = gSDE(action_dim = action_dim, mean_actions = action_mean, log_std = action_std)
       else:
         #sample from standard gaussian
         action_std = torch.exp(action_logstd)
