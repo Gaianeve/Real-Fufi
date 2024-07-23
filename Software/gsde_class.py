@@ -82,7 +82,7 @@ class TanhBijector:
 """## gSDE class 🐧"""
 
 class gSDE(Distribution):
-    bijector: Optional["TanhBijector"]
+    bijector: Optional[TanhBijector]
     latent_sde_dim: Optional[int]
     weights_dist: Normal
     _latent_sde: th.Tensor
@@ -92,6 +92,8 @@ class gSDE(Distribution):
     def __init__(
         self,
         action_dim: int,
+        mean_actions: Optional[th.Tensor] = None,
+        log_std: Optional[th.Tensor] = None,
         full_std: bool = True,
         use_expln: bool = False,
         squash_output: bool = False,
@@ -100,18 +102,15 @@ class gSDE(Distribution):
     ):
         super().__init__()
         self.action_dim = action_dim
+        self.mean_actions = mean_actions
+        self.log_std = log_std
         self.latent_sde_dim = None
-        self.mean_actions = None #get from nn
-        self.log_std = None #get from NN
         self.use_expln = use_expln
         self.full_std = full_std
         self.epsilon = epsilon
         self.learn_features = learn_features
-        if squash_output:
-            self.bijector = TanhBijector(epsilon)
-        else:
-            self.bijector = None
-
+        self.bijector = TanhBijector(epsilon) if squash_output else None
+        
     #-------------------------------------------- get actions ------------------------------------------------------
     def get_std(self, log_std: th.Tensor) -> th.Tensor:
         """
