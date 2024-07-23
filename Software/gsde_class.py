@@ -171,7 +171,7 @@ class gSDE(Distribution):
         return noise.squeeze(dim=1)
 
 
-    def get_distribution(
+    def proba_distribution(
         self, mean_actions: th.Tensor, log_std: th.Tensor, latent_sde: th.Tensor
     ) -> th.Tensor:
         """
