@@ -125,8 +125,7 @@ class gSDE(Distribution):
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
         # Default case: only one exploration matrix
         if len(self._latent_sde) == 1 or len(self._latent_sde) != len(self.exploration_matrices):
-            new_latent = self._latent_sde.reshape(n_env, 3, 2, n_step_history)
-            return torch.einsum('abcd,ad->abc', new_latent, self.exploration_mat)
+            return th.mm(self._latent_sde, self.exploration_mat)
             
         #Use batch matrix multiplication for efficient computation: 
         #TO BE FIXED ACCORDING TO OBS DIMENSIONS
