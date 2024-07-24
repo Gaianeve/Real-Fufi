@@ -44,9 +44,7 @@ It is used to create the noise exploration matrix and compute the log probabilit
 
 class gSDE(Distribution):
     bijector: Optional[TanhBijector]
-    latent_sde_dim: Optional[int]
     weights_dist: Normal
-    _latent_sde: th.Tensor
     exploration_mat: th.Tensor
     exploration_matrices: th.Tensor
 
@@ -77,7 +75,7 @@ class gSDE(Distribution):
         self.bijector = TanhBijector(epsilon) if squash_output else None
 
         #get combination of action and coordinates for noise computation
-        self.latent_sde = th.nn.Linear(self.obs_dim, latent_sde_dim)
+        self.latent_sde = th.nn.Linear(self.obs_dim, self.latent_sde_dim)
         self._latent_sde = self.latent_sde(self.x)
     #-------------------------------------------- get actions ------------------------------------------------------
     def get_std(self) -> th.Tensor:
