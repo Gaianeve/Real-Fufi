@@ -120,13 +120,16 @@ class gSDE(Distribution):
       exploration_matrices = self.weights_dist.rsample((batch_size,))
       return exploration_matrices
 
-    def get_noise(self) -> th.Tensor:
+    def get_noise(self, n_env, n_step_history) -> th.Tensor:
         self.exploration_matrices = self.sample_weights()
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
         # Default case: only one exploration matrix
         if len(self._latent_sde) == 1 or len(self._latent_sde) != len(self.exploration_matrices):
-            return th.mm(self._latent_sde, self.exploration_mat)
-        # Use batch matrix multiplication for efficient computation
+            new_latent = self._latent_sde.reshape(n_env, 3, 2, n_step_history)
+            return torch.einsum('abcd,ef->abcefd', new_latent, self.exploration_mat)
+            
+        #Use batch matrix multiplication for efficient computation: 
+        #TO BE FIXED ACCORDING TO OBS DIMENSIONS
         # (batch_size, n_features) -> (batch_size, 1, n_features)
         self._latent_sde = self._latent_sde.unsqueeze(dim=1)
         # (batch_size, 1, n_actions)
