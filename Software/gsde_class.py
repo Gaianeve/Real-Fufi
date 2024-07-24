@@ -152,7 +152,7 @@ class gSDE(Distribution):
 
     #get action
     def sample(self) -> th.Tensor:
-        noise = self.get_noise(self._latent_sde)
+        noise = self.get_noise(self)
         self.distribution = proba_distribution(self.mean_actions, self.log_std)
         actions = self.distribution.mean + noise
         if self.bijector is not None:
