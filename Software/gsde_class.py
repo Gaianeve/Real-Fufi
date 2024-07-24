@@ -76,7 +76,7 @@ class gSDE(Distribution):
         self.bijector = TanhBijector(epsilon) if squash_output else None
         
     #-------------------------------------------- get actions ------------------------------------------------------
-    def get_std(self, log_std: th.Tensor) -> th.Tensor:
+    def get_std(self) -> th.Tensor:
         """
         Get the standard deviation from the learned parameter
         (log of it by default). This ensures that the std is positive.
@@ -87,24 +87,24 @@ class gSDE(Distribution):
         if self.use_expln:
             # From gSDE paper, it allows to keep variance
             # above zero and prevent it from growing too fast
-            below_threshold = th.exp(log_std) * (log_std <= 0)
+            below_threshold = th.exp(self.log_std) * (self.log_std <= 0)
             # Avoid NaN: zeros values that are below zero
-            safe_log_std = log_std * (log_std > 0) + self.epsilon
-            above_threshold = (th.log1p(safe_log_std) + 1.0) * (log_std > 0)
+            safe_self.log_std = self.log_std * (self.log_std > 0) + self.epsilon
+            above_threshold = (th.log1p(safe_self.log_std) + 1.0) * (self.log_std > 0)
             std = below_threshold + above_threshold
         else:
             # Use normal exponential
-            std = th.exp(log_std)
+            std = th.exp(self.log_std)
 
         if self.full_std:
             return std
         assert self.latent_sde_dim is not None
         # Reduce the number of parameters:
-        return th.ones(self.latent_sde_dim, self.action_dim).to(log_std.device) * std
+        return th.ones(self.latent_sde_dim, self.action_dim).to(self.log_std.device) * std
 
 
 
-    def sample_weights(self, log_std: th.Tensor, batch_size: int = 1)-> th.Tensor:
+    def sample_weights(self, batch_size: int = 1)-> th.Tensor:
       """
       Sample weights for the noise exploration matrix,
       using a centered Gaussian distribution.
@@ -112,7 +112,7 @@ class gSDE(Distribution):
       :param log_std:
       :param batch_size:
       """
-      std = self.get_std(log_std)
+      std = self.get_std()
       self.weights_dist = Normal(th.zeros_like(std), std)
       # Reparametrization trick to pass gradients
       self.exploration_mat = self.weights_dist.rsample()
@@ -121,7 +121,7 @@ class gSDE(Distribution):
       return exploration_matrices
 
     def get_noise(self) -> th.Tensor:
-        self.exploration_matrices = self.sample_weights(log_std)
+        self.exploration_matrices = self.sample_weights()
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
         # Default case: only one exploration matrix
         if len(self._latent_sde) == 1 or len(self._latent_sde) != len(self.exploration_matrices):
@@ -135,7 +135,7 @@ class gSDE(Distribution):
 
 
     def proba_distribution(
-        self, mean_actions: th.Tensor, log_std: th.Tensor) -> th.Tensor:
+        self, mean_actions: th.Tensor) -> th.Tensor:
         """
         Create the distribution given its parameters (mean, std)
 
@@ -146,7 +146,7 @@ class gSDE(Distribution):
         """
         # Stop gradient if we don't want to influence the features
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
-        variance = th.mm(self._latent_sde**2, self.get_std(log_std) ** 2)
+        variance = th.mm(self._latent_sde**2, self.get_std(self.log_std) ** 2)
         distribution = Normal(mean_actions, th.sqrt(variance + self.epsilon))
         return distribution
 
@@ -194,15 +194,15 @@ class gSDE(Distribution):
         return actions
 
     def actions_from_params(
-        self, mean_actions: th.Tensor, log_std: th.Tensor, deterministic: bool = False
+        self, mean_actions: th.Tensor, deterministic: bool = False
     ) -> th.Tensor:
         # Update the proba distribution
-        self.proba_distribution(mean_actions, log_std)
+        self.proba_distribution(mean_actions, self.log_std)
         return self.get_actions(deterministic=deterministic)
 
     def log_prob_from_params(
-        self, mean_actions: th.Tensor, log_std: th.Tensor) -> Tuple[th.Tensor, th.Tensor]:
-        actions = self.actions_from_params(mean_actions, log_std)
+        self, mean_actions: th.Tensor) -> Tuple[th.Tensor, th.Tensor]:
+        actions = self.actions_from_params(mean_actions)
         log_prob = self.log_prob(actions)
         return actions, log_prob
 
