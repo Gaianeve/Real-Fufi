@@ -53,10 +53,10 @@ class gSDE(Distribution):
     def __init__(
         self,
         action_dim: int,
+        latent_sde_dim : int,
         mean_actions: Optional[th.Tensor] = None,
         log_std: Optional[th.Tensor] = None,
         latent_sde: Optional[th.Tensor] = None,
-        latent_sde_dim : int,
         full_std: bool = True,
         use_expln: bool = False,
         squash_output: bool = False,
