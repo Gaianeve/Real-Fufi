@@ -56,7 +56,8 @@ Paper [here](https://arxiv.org/abs/2005.05719)
 class Agent(nn.Module):
   def __init__(self, envs, use_sde):
       super().__init__()
-
+      #assign environment to interact with
+      self.envs = envs
       #gSDE flag
       self.use_sde = use_sde
 
@@ -87,7 +88,7 @@ class Agent(nn.Module):
 
       if self.use_sde:
         #sample from SDE distribution
-        action_dim = np.prod(envs.single_action_space.shape)
+        action_dim = np.prod(self.envs.single_action_space.shape)
         probs = gSDE(action_dim = action_dim, mean_actions = action_mean, log_std = action_std)
       else:
         #sample from standard gaussian
