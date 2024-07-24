@@ -53,32 +53,29 @@ class gSDE(Distribution):
     def __init__(
         self,
         action_dim: int,
-        latent_sde_dim : int,
+        observation_dim: int
+        observation: Optional[th.Tensor] = None,
         mean_actions: Optional[th.Tensor] = None,
         log_std: Optional[th.Tensor] = None,
-        latent_sde: Optional[th.Tensor] = None,
         full_std: bool = True,
         use_expln: bool = False,
         squash_output: bool = False,
-        learn_features: bool = False, #not modifying raw obs
+        learn_features: bool = True,
         epsilon: float = 1e-6,
     ):
         super().__init__()
         self.action_dim = action_dim
+        self.obs_dim = observation_dim
         self.mean_actions = mean_actions
         self.log_std = log_std
-        self.latent_sde_dim = latent_sde_dim
-        print('dimensione di sto cazzo')
-        print(self.latent_sde_dim)
-        self._latent_sde = latent_sde
-        print('tensore del cazzo')
-        print(self._latent_sde)
+        self.latent_sde_dim = self.mean_actions.shape
         self.use_expln = use_expln
         self.full_std = full_std
         self.epsilon = epsilon
         self.learn_features = learn_features
         self.bijector = TanhBijector(epsilon) if squash_output else None
-        
+
+        self._latent_sde = th.nn.Linear(self.obs_dim, latent_sde_dim)
     #-------------------------------------------- get actions ------------------------------------------------------
     def get_std(self) -> th.Tensor:
         """
@@ -129,17 +126,15 @@ class gSDE(Distribution):
       exploration_matrices = self.weights_dist.rsample((batch_size,))
       return exploration_matrices
 
-    def get_noise(self,batch_size: int = 1)-> th.Tensor:
+    def get_noise(self, batch_size: int = 1) -> th.Tensor:
         self.exploration_matrices = self.sample_weights()
+        self._latent_sde = self.latent_sde(
+            th.cat([self.observations, self.mean_actions], dim=1)
+        )
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
-        # Default case: only one exploration matrix
         if len(self._latent_sde) == 1 or len(self._latent_sde) != len(self.exploration_matrices):
             return th.mm(self._latent_sde, self.exploration_mat)
-            
-        #Use batch matrix multiplication for efficient computation: 
-        # (batch_size, n_features) -> (batch_size, 1, n_features)
         self._latent_sde = self._latent_sde.unsqueeze(dim=1)
-        # (batch_size, 1, n_actions)
         noise = th.bmm(self._latent_sde, self.exploration_matrices)
         return noise.squeeze(dim=1)
 
