@@ -89,8 +89,8 @@ class gSDE(Distribution):
             # above zero and prevent it from growing too fast
             below_threshold = th.exp(self.log_std) * (self.log_std <= 0)
             # Avoid NaN: zeros values that are below zero
-            safe_self.log_std = self.log_std * (self.log_std > 0) + self.epsilon
-            above_threshold = (th.log1p(safe_self.log_std) + 1.0) * (self.log_std > 0)
+            self.safe_log_std = self.log_std * (self.log_std > 0) + self.epsilon
+            above_threshold = (th.log1p(self.safe_log_std) + 1.0) * (self.log_std > 0)
             std = below_threshold + above_threshold
         else:
             # Use normal exponential
@@ -120,7 +120,7 @@ class gSDE(Distribution):
       exploration_matrices = self.weights_dist.rsample((batch_size,))
       return exploration_matrices
 
-    def get_noise(self, n_env, n_step_history) -> th.Tensor:
+    def get_noise(self,batch_size: int = 1)-> th.Tensor:
         self.exploration_matrices = self.sample_weights()
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
         # Default case: only one exploration matrix
@@ -128,7 +128,6 @@ class gSDE(Distribution):
             return th.mm(self._latent_sde, self.exploration_mat)
             
         #Use batch matrix multiplication for efficient computation: 
-        #TO BE FIXED ACCORDING TO OBS DIMENSIONS
         # (batch_size, n_features) -> (batch_size, 1, n_features)
         self._latent_sde = self._latent_sde.unsqueeze(dim=1)
         # (batch_size, 1, n_actions)
