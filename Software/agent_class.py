@@ -60,7 +60,7 @@ class Agent(nn.Module):
       self.envs = envs
       #gSDE flag
       self.use_sde = use_sde
-
+        
       #actor critic NN
       self.critic = nn.Sequential(
           layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
@@ -78,7 +78,8 @@ class Agent(nn.Module):
       )
       self.actor_logstd = nn.Parameter(torch.zeros(1, np.prod(envs.single_action_space.shape)))
       #learn log of standard dev
-
+      
+  ## keep in mind that x are the observations
   def get_value(self, x):
       return self.critic(x)
 
@@ -90,7 +91,9 @@ class Agent(nn.Module):
       if self.use_sde:
         #sample from SDE distribution
         action_dim = np.prod(self.envs.single_action_space.shape)
-        probs = gSDE(action_dim = action_dim, mean_actions = action_mean, log_std = action_std)
+        observation_dim = np.prod(self.envs.single_action_space.shape)
+        probs = gSDE(action_dim = action_dim, mean_actions = action_mean, log_std = action_std, latent_sde = x,
+        latent_sde_dim = observation_dim)
       else:
         #sample from standard gaussian
         probs = Normal(action_mean, action_std)

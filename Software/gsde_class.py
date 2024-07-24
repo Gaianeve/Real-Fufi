@@ -14,7 +14,12 @@ import torch as th
 from gym import spaces
 from torch import nn
 
-from stable_baselines3.common.distributions import Distribution
+## Needed class for gSDE 🎡
+"""
+The **TanhBijector** class defines a bijective transformation using the hyperbolic tangent function (tanh). This class is often used in reinforcement learning algorithms to squash the output of the policy network to ensure that the actions remain within a specific range, typically [-1,1]
+"""
+
+from stable_baselines3.common.distributions import Distribution, TanhBijector
 from torch.distributions import Bernoulli, Categorical, Normal
 
 """# State Dependent Noise Distribution (gSDE) 🌵
@@ -32,52 +37,8 @@ It is used to create the noise exploration matrix and compute the log probabilit
    * `:param learn_features`: Whether to learn features for gSDE or not. This will enable gradients to be backpropagated through the features ``latent_sde`` in the code.
 
    * `:param epsilon:` small value to avoid NaN due to numerical imprecision.
-
-## Needed class for gSDE 🎡
-The **TanhBijector** class defines a bijective transformation using the hyperbolic tangent function (tanh). This class is often used in reinforcement learning algorithms to squash the output of the policy network to ensure that the actions remain within a specific range, typically [-1,1]
 """
 
-class TanhBijector:
-    """
-    Bijective transformation of a probability distribution
-    using a squashing function (tanh)
-
-    :param epsilon: small value to avoid NaN due to numerical imprecision.
-    """
-
-    def __init__(self, epsilon: float = 1e-6):
-        super().__init__()
-        self.epsilon = epsilon
-
-    @staticmethod
-    def forward(x: th.Tensor) -> th.Tensor:
-        return th.tanh(x)
-
-    @staticmethod
-    def atanh(x: th.Tensor) -> th.Tensor:
-        """
-        Inverse of Tanh
-
-        Taken from Pyro: https://github.com/pyro-ppl/pyro
-        0.5 * torch.log((1 + x ) / (1 - x))
-        """
-        return 0.5 * (x.log1p() - (-x).log1p())
-
-    @staticmethod
-    def inverse(y: th.Tensor) -> th.Tensor:
-        """
-        Inverse tanh.
-
-        :param y:
-        :return:
-        """
-        eps = th.finfo(y.dtype).eps
-        # Clip the action to avoid NaN
-        return TanhBijector.atanh(y.clamp(min=-1.0 + eps, max=1.0 - eps))
-
-    def log_prob_correction(self, x: th.Tensor) -> th.Tensor:
-        # Squash correction (from original SAC implementation)
-        return th.log(1.0 - th.tanh(x) ** 2 + self.epsilon)
 
 """## gSDE class 🐧"""
 
