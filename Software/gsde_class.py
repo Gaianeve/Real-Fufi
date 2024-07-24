@@ -94,17 +94,20 @@ class gSDE(Distribution):
         action_dim: int,
         mean_actions: Optional[th.Tensor] = None,
         log_std: Optional[th.Tensor] = None,
+        latent_sde: Optional[th.Tensor] = None,
+        latent_sde_dim : int,
         full_std: bool = True,
         use_expln: bool = False,
         squash_output: bool = False,
-        learn_features: bool = False,
+        learn_features: bool = False, #not modifying raw obs
         epsilon: float = 1e-6,
     ):
         super().__init__()
         self.action_dim = action_dim
         self.mean_actions = mean_actions
         self.log_std = log_std
-        self.latent_sde_dim = None
+        self.latent_sde_dim = latent_sde_dim
+        self._latent_sde = latent_sde
         self.use_expln = use_expln
         self.full_std = full_std
         self.epsilon = epsilon
@@ -156,23 +159,22 @@ class gSDE(Distribution):
       exploration_matrices = self.weights_dist.rsample((batch_size,))
       return exploration_matrices
 
-    def get_noise(self, latent_sde: th.Tensor) -> th.Tensor:
+    def get_noise(self) -> th.Tensor:
         self.exploration_matrices = self.sample_weights(log_std)
-        latent_sde = latent_sde if self.learn_features else latent_sde.detach()
+        self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
         # Default case: only one exploration matrix
-        if len(latent_sde) == 1 or len(latent_sde) != len(self.exploration_matrices):
-            return th.mm(latent_sde, self.exploration_mat)
+        if len(self._latent_sde) == 1 or len(self._latent_sde) != len(self.exploration_matrices):
+            return th.mm(self._latent_sde, self.exploration_mat)
         # Use batch matrix multiplication for efficient computation
         # (batch_size, n_features) -> (batch_size, 1, n_features)
-        latent_sde = latent_sde.unsqueeze(dim=1)
+        self._latent_sde = self._latent_sde.unsqueeze(dim=1)
         # (batch_size, 1, n_actions)
-        noise = th.bmm(latent_sde, self.exploration_matrices)
+        noise = th.bmm(self._latent_sde, self.exploration_matrices)
         return noise.squeeze(dim=1)
 
 
     def proba_distribution(
-        self, mean_actions: th.Tensor, log_std: th.Tensor, latent_sde: th.Tensor
-    ) -> th.Tensor:
+        self, mean_actions: th.Tensor, log_std: th.Tensor) -> th.Tensor:
         """
         Create the distribution given its parameters (mean, std)
 
@@ -182,7 +184,7 @@ class gSDE(Distribution):
         :return:
         """
         # Stop gradient if we don't want to influence the features
-        self._latent_sde = latent_sde if self.learn_features else latent_sde.detach()
+        self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
         variance = th.mm(self._latent_sde**2, self.get_std(log_std) ** 2)
         distribution = Normal(mean_actions, th.sqrt(variance + self.epsilon))
         return distribution
@@ -190,7 +192,7 @@ class gSDE(Distribution):
     #get action
     def sample(self) -> th.Tensor:
         noise = self.get_noise(self._latent_sde)
-        self.distribution = get_distribution(self.mean_actions, self.log_std, latent_sde)
+        self.distribution = proba_distribution((self.mean_actions, self.log_std)
         actions = self.distribution.mean + noise
         if self.bijector is not None:
             return self.bijector.forward(actions)
@@ -231,16 +233,15 @@ class gSDE(Distribution):
         return actions
 
     def actions_from_params(
-        self, mean_actions: th.Tensor, log_std: th.Tensor, latent_sde: th.Tensor, deterministic: bool = False
+        self, mean_actions: th.Tensor, log_std: th.Tensor, deterministic: bool = False
     ) -> th.Tensor:
         # Update the proba distribution
-        self.proba_distribution(mean_actions, log_std, latent_sde)
+        self.proba_distribution(mean_actions, log_std)
         return self.get_actions(deterministic=deterministic)
 
     def log_prob_from_params(
-        self, mean_actions: th.Tensor, log_std: th.Tensor, latent_sde: th.Tensor
-    ) -> Tuple[th.Tensor, th.Tensor]:
-        actions = self.actions_from_params(mean_actions, log_std, latent_sde)
+        self, mean_actions: th.Tensor, log_std: th.Tensor) -> Tuple[th.Tensor, th.Tensor]:
+        actions = self.actions_from_params(mean_actions, log_std)
         log_prob = self.log_prob(actions)
         return actions, log_prob
 
