@@ -66,6 +66,7 @@ class gSDE(Distribution):
         super().__init__()
         self.action_dim = action_dim
         self.obs_dim = observation_dim
+        self.x = observation
         self.mean_actions = mean_actions
         self.log_std = log_std
         self.latent_sde_dim = self.mean_actions.shape
@@ -75,7 +76,9 @@ class gSDE(Distribution):
         self.learn_features = learn_features
         self.bijector = TanhBijector(epsilon) if squash_output else None
 
-        self._latent_sde = th.nn.Linear(self.obs_dim, latent_sde_dim)
+        #get combination of action and coordinates for noise computation
+        self.latent_sde = th.nn.Linear(self.obs_dim, latent_sde_dim)
+        self._latent_sde = self.latent_sde(self.x)
     #-------------------------------------------- get actions ------------------------------------------------------
     def get_std(self) -> th.Tensor:
         """
@@ -114,23 +117,15 @@ class gSDE(Distribution):
       :param batch_size:
       """
       std = self.get_std()
-      print('deviazione standard che prendo')
-      print(std)
-      print(std.shape)
       self.weights_dist = Normal(th.zeros_like(std), std)
       # Reparametrization trick to pass gradients
       self.exploration_mat = self.weights_dist.rsample()
-      print('esploratore della tu mamma')
-      print(self.exploration_mat.shape)
       # Pre-compute matrices in case of parallel exploration
       exploration_matrices = self.weights_dist.rsample((batch_size,))
       return exploration_matrices
 
     def get_noise(self, batch_size: int = 1) -> th.Tensor:
         self.exploration_matrices = self.sample_weights()
-        self._latent_sde = self.latent_sde(
-            th.cat([self.observations, self.mean_actions], dim=1)
-        )
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
         if len(self._latent_sde) == 1 or len(self._latent_sde) != len(self.exploration_matrices):
             return th.mm(self._latent_sde, self.exploration_mat)
