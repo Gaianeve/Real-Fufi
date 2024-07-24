@@ -86,8 +86,6 @@ class Agent(nn.Module):
   def get_action_and_value(self, x, action=None):
       action_mean = self.actor_mean(x)
       action_logstd = self.actor_logstd.expand_as(action_mean) #match dimention of action mean
-      print('logaritmo del gesu shape')
-      print(action_logstd.shape)
         
       if self.use_sde:
         #sample from SDE distribution
