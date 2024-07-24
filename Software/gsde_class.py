@@ -67,20 +67,17 @@ class gSDE(Distribution):
         self.x = observation
         self.mean_actions = mean_actions
         self.log_std = log_std
-        self.latent_sde_dim = self.mean_actions.shape
         self.use_expln = use_expln
         self.full_std = full_std
         self.epsilon = epsilon
-        self.flattened_latent_sde_dim = np.prod(self.latent_sde_dim)
         self.learn_features = learn_features
         self.bijector = TanhBijector(epsilon) if squash_output else None
 
         #get combination of action and coordinates for noise computation
         # Linear layer to output flattened dimensions
-        self.latent_sde = th.nn.Linear(self.obs_dim, self.flattened_latent_sde_dim)
+        self.latent_sde = th.nn.Linear(self.obs_dim, 1)
         self._latent_sde = self.latent_sde(self.x)
-        # Reshape immediately to match the shape of mean_actions
-        self._latent_sde = self._latent_sde.view(self.latent_sde_dim)
+        self.latent_sde_dim = self._latent_sde.shape
     #-------------------------------------------- get actions ------------------------------------------------------
     def get_std(self) -> th.Tensor:
         """
