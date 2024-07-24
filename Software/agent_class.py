@@ -90,7 +90,7 @@ class Agent(nn.Module):
       if self.use_sde:
         #sample from SDE distribution
         action_dim = np.prod(self.envs.single_action_space.shape)
-        int_latent = np.array(envs.single_observation_space.shape).prod()
+        int_latent = np.array(self.envs.single_observation_space.shape).prod()
         probs = gSDE(action_dim = action_dim, observation_dim = int_latent, observation = x, mean_actions = action_mean, log_std = action_logstd)
       else:
         #sample from standard gaussian
