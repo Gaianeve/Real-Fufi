@@ -75,7 +75,7 @@ class gSDE(Distribution):
 
         #get combination of action and coordinates for noise computation
         # Linear layer to output flattened dimensions
-        self.latent_sde = th.nn.Linear(self.obs_dim, 1)
+        self.latent_sde = th.nn.Linear(self.obs_dim,2)
         self._latent_sde = self.latent_sde(self.x)
         self.latent_sde_dim = self._latent_sde.shape
     #-------------------------------------------- get actions ------------------------------------------------------
