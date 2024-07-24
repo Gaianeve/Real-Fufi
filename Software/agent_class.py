@@ -86,15 +86,15 @@ class Agent(nn.Module):
   def get_action_and_value(self, x, action=None):
       action_mean = self.actor_mean(x)
       action_logstd = self.actor_logstd.expand_as(action_mean) #match dimention of action mean
-      action_std = torch.exp(action_logstd)
         
       if self.use_sde:
         #sample from SDE distribution
         action_dim = np.prod(self.envs.single_action_space.shape)
         observation_dim = np.prod(self.envs.single_action_space.shape)
-        probs = gSDE(action_dim = action_dim,latent_sde_dim = observation_dim, mean_actions = action_mean, log_std = action_std, latent_sde = x)
+        probs = gSDE(action_dim = action_dim,latent_sde_dim = observation_dim, mean_actions = action_mean, log_std = action_logstd, latent_sde = x)
       else:
         #sample from standard gaussian
+        action_std = torch.exp(action_logstd)
         probs = Normal(action_mean, action_std)
 
       if action is None:
