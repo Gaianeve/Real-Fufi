@@ -68,7 +68,11 @@ class gSDE(Distribution):
         self.mean_actions = mean_actions
         self.log_std = log_std
         self.latent_sde_dim = latent_sde_dim
+        print('dimensione di sto cazzo')
+        print(self.latent_sde_dim)
         self._latent_sde = latent_sde
+        print('tensore del cazzo')
+        print(self._latent_sde)
         self.use_expln = use_expln
         self.full_std = full_std
         self.epsilon = epsilon
@@ -113,9 +117,14 @@ class gSDE(Distribution):
       :param batch_size:
       """
       std = self.get_std()
+      print('deviazione standard che prendo')
+      print(std)
+      print(std.shape)
       self.weights_dist = Normal(th.zeros_like(std), std)
       # Reparametrization trick to pass gradients
       self.exploration_mat = self.weights_dist.rsample()
+      print('esploratore della tu mamma')
+      print(self.exploration_mat.shape)
       # Pre-compute matrices in case of parallel exploration
       exploration_matrices = self.weights_dist.rsample((batch_size,))
       return exploration_matrices
