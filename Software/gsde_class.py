@@ -132,8 +132,7 @@ class gSDE(Distribution):
         return noise
 
 
-    def proba_distribution(
-        self) -> th.Tensor:
+    def proba_distribution(self) -> Normal:
         """
         Create the distribution given its parameters (mean, std)
 
@@ -151,7 +150,7 @@ class gSDE(Distribution):
     #get action
     def sample(self) -> th.Tensor:
         noise = self.get_noise()
-        self.distribution = proba_distribution()
+        self.distribution = self.proba_distribution()
         actions = self.distribution.mean + noise
         if self.bijector is not None:
             return self.bijector.forward(actions)
