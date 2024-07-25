@@ -143,7 +143,7 @@ class gSDE(Distribution):
         """
         # Stop gradient if we don't want to influence the features
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
-        variance = th.mm(self._latent_sde**2, self.get_std() ** 2)
+        variance = self._latent_sde**2*self.get_std() ** 2
         distribution = Normal(self.mean_actions, th.sqrt(variance + self.epsilon))
         return distribution
 
