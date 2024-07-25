@@ -96,9 +96,18 @@ class Agent(nn.Module):
         #sample from standard gaussian
         action_std = torch.exp(action_logstd)
         probs = Normal(action_mean, action_std)
+        print('probs shape)
+        print(probs)
+        print(probs.shape)
+      
 
       if action is None:
           action = probs.sample()
+          print('azione che decide di fare')
+          print(action)
+          print('quello che sputa log_prob')
+          print(probs.log_prob(action))
+          print(probs.log_prob(action).shape)
       return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), self.critic(x)
 
     # NN summary
