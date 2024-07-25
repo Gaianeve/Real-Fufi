@@ -19,7 +19,7 @@ from torch import nn
 The **TanhBijector** class defines a bijective transformation using the hyperbolic tangent function (tanh). This class is often used in reinforcement learning algorithms to squash the output of the policy network to ensure that the actions remain within a specific range, typically [-1,1]
 """
 
-from stable_baselines3.common.distributions import Distribution, TanhBijector
+from stable_baselines3.common.distributions import Distribution, TanhBijector, sum_independent_dims
 from torch.distributions import Bernoulli, Categorical, Normal
 
 """# State Dependent Noise Distribution (gSDE) 🌵
