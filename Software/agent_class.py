@@ -96,7 +96,7 @@ class Agent(nn.Module):
         #sample from standard gaussian
         action_std = torch.exp(action_logstd)
         probs = Normal(action_mean, action_std)
-        print('probs shape)
+        print('probs shape')
         print(probs)
         print(probs.shape)
       
