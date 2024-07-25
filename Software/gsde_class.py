@@ -122,15 +122,14 @@ class gSDE(Distribution):
       # Pre-compute matrices in case of parallel exploration
       exploration_matrices = self.weights_dist.rsample((batch_size,))
       return exploration_matrices
-
+        
     def get_noise(self, batch_size: int = 1) -> th.Tensor:
         self.exploration_matrices = self.sample_weights()
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
-        if len(self._latent_sde) == 1 or len(self._latent_sde) != len(self.exploration_matrices):
-            return th.mm(self._latent_sde, self.exploration_mat)
-        self._latent_sde = self._latent_sde.unsqueeze(dim=1)
-        noise = th.bmm(self._latent_sde, self.exploration_matrices)
-        return noise.squeeze(dim=1)
+        if len(self._latent_sde) == 1 or len(self._latent_sde) != len(self.exploration_mat):
+            return self._latent_sde * self.exploration_mat
+        noise = self._latent_sde * self.exploration_mat
+        return noise
 
 
     def proba_distribution(
