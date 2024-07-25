@@ -55,19 +55,18 @@ class HistoryWrapper(gym.Wrapper):
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
         self.history.pop(0)
-    
+
         obs = np.concatenate([obs, action])
         self.history.append(obs)
         obs = np.array(self.history, dtype=np.float32)
-    
+
         if self.use_continuity_cost:
             continuity_cost = self._continuity_cost(obs)
             reward -= self.beta * continuity_cost
             info["continuity_cost"] = continuity_cost
-    
+
         return obs.flatten(), reward, done, info
 
-  
     def reset(
     self,
     seed: Optional[int] = None,
@@ -76,19 +75,15 @@ class HistoryWrapper(gym.Wrapper):
       # Chiama il reset dell'ambiente per ottenere l'osservazione iniziale
       obs = self.env.reset(seed=seed, options=options)
 
-      # Ensure obs has the correct shape (add zeros for actions)
+      # Assicurati che obs abbia la forma corretta (aggiungi zeri per le azioni)
       obs = np.concatenate([
           obs,
           np.zeros_like(self.env.action_space.low)
       ])
-  
-      # Initialize self.history with the correct shape
+
+      # Imposta self.history con la forma corretta
       self.history = [np.zeros_like(obs) for _ in range(self.steps)]
-      self.history[0] = obs  # Set the first observation
-  
-      # Ensure self.history elements have the same dimensions
-      for i in range(1, len(self.history)):
-          self.history[i] = np.zeros_like(obs)
-  
+      self.history[0] = obs  # Imposta la prima osservazione
+
+      # Restituisce la storia come array appiattito
       return np.array(self.history, dtype=np.float32).flatten()
-    
