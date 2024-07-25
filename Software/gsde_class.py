@@ -133,7 +133,7 @@ class gSDE(Distribution):
 
 
     def proba_distribution(
-        self, mean_actions: th.Tensor) -> th.Tensor:
+        self) -> th.Tensor:
         """
         Create the distribution given its parameters (mean, std)
 
@@ -145,13 +145,13 @@ class gSDE(Distribution):
         # Stop gradient if we don't want to influence the features
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
         variance = th.mm(self._latent_sde**2, self.get_std(self.log_std) ** 2)
-        distribution = Normal(mean_actions, th.sqrt(variance + self.epsilon))
+        distribution = Normal(self.mean_actions, th.sqrt(variance + self.epsilon))
         return distribution
 
     #get action
     def sample(self) -> th.Tensor:
         noise = self.get_noise()
-        self.distribution = proba_distribution(self.mean_actions, self.log_std)
+        self.distribution = proba_distribution()
         actions = self.distribution.mean + noise
         if self.bijector is not None:
             return self.bijector.forward(actions)
