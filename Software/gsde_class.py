@@ -33,7 +33,7 @@ It is used to create the noise exploration matrix and compute the log probabilit
    * :`param full_std:` Whether to use (n_features x n_actions) parameters for the std instead of only (n_features,)
    * :`param use_expln:` Use `expln()` function instead of `exp()` to ensure a positive standard deviation (cf paper). It allows to keep variance above zero and prevent it from growing too fast. In practice, `exp()` is usually enough.
    * `:param squash_output`: Whether to squash the output using a tanh function, this ensures bounds are satisfied.
-   
+
    * `:param learn_features`: Whether to learn features for gSDE or not. This will enable gradients to be backpropagated through the features ``latent_sde`` in the code.
 
    * `:param epsilon:` small value to avoid NaN due to numerical imprecision.
@@ -72,6 +72,9 @@ class gSDE(Distribution):
         self.epsilon = epsilon
         self.learn_features = learn_features
         self.bijector = TanhBijector(epsilon) if squash_output else None
+
+        #initializing distribution of actions
+        self.distribution = self.proba_distribution()
 
         #get combination of action and coordinates for noise computation
         # Linear layer to output flattened dimensions
@@ -122,7 +125,7 @@ class gSDE(Distribution):
       # Pre-compute matrices in case of parallel exploration
       exploration_matrices = self.weights_dist.rsample((batch_size,))
       return exploration_matrices
-        
+
     def get_noise(self, batch_size: int = 1) -> th.Tensor:
         self.exploration_matrices = self.sample_weights()
         self._latent_sde = self._latent_sde if self.learn_features else self._latent_sde.detach()
