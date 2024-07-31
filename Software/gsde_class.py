@@ -73,14 +73,15 @@ class gSDE(Distribution):
         self.learn_features = learn_features
         self.bijector = TanhBijector(epsilon) if squash_output else None
 
-        #initializing distribution of actions
-        self.distribution = self.proba_distribution()
-
         #get combination of action and coordinates for noise computation
         # Linear layer to output flattened dimensions
         self.latent_sde = th.nn.Linear(self.obs_dim,1)
         self._latent_sde = self.latent_sde(self.x)
         self.latent_sde_dim = self._latent_sde.shape
+
+        #initializing distribution of actions
+        self.distribution = self.proba_distribution()
+
     #-------------------------------------------- get actions ------------------------------------------------------
     def get_std(self) -> th.Tensor:
         """
