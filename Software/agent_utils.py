@@ -190,6 +190,7 @@ def evaluate_agent(gym_id, seed, run_name, device, agent_v,\
   # make a brand new environment and record the video
   env = gym.make(gym_id)
   env = gym.wrappers.RecordEpisodeStatistics(env)
+  env = HistoryWrapper(env, 4, 0.4, True)
   if eval_with_video:
     env = gym.wrappers.RecordVideo(env, f"evaluation_videos/{run_name}")
   env.seed(seed)
