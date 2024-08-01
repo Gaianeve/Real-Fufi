@@ -113,35 +113,32 @@ class Agent(nn.Module):
     for name, param in self.named_parameters():
       print(name, param.data)
 
-  # checkpoints
+   #checkpoints
   def save_checkpoint(self, epoch_v):
-    checkpoint_name = get_checkpoint_name(epoch_v)
-    directory = os.getcwd() + '/' + 'checkpoints/'
-    #if it doesn't exists, then create it
-    if not os.path.exists(directory):
-      os.mkdir(directory)
-      print('Dear human, checkpoint directory did not existed. I created it for you ')
-    path = directory + checkpoint_name
-    print("=> saving checkpoint '{}'".format(path))
-    torch.save(self, path)
+      checkpoint_name = get_checkpoint_name(epoch_v)
+      directory = os.getcwd() + '/' + 'checkpoints/'
+      #if it doesn't exists, then create it
+      if not os.path.exists(directory):
+          os.mkdir(directory)
+          print('Dear human, checkpoint directory did not existed. I created it for you ')
+      path = directory + checkpoint_name
+      print("=> saving checkpoint '{}'".format(path))
+      torch.save(self.state_dict(), path)
 
   def resume_from_checkpoint(self, path):
-    print("=> loading checkpoint '{}'".format(path))
-    return torch.load(path)
+      print("=> loading checkpoint '{}'".format(path))
+      self.load_state_dict(torch.load(path))
 
   def save_agent(self, file_name):
-    directory = os.getcwd() + '/' + 'models/'
-    #if it doesn't exists, then create it
-    if not os.path.exists(directory):
-      os.mkdir(directory)
-      print('Dear human, saved model directory did not existed. I created it for you ')
-    path = directory + file_name
-    print("=> saving model as best agent in '{}'".format(path))
-    torch.save(self, path)
+      directory = os.getcwd() + '/' + 'models/'
+      #if it doesn't exists, then create it
+      if not os.path.exists(directory):
+          os.mkdir(directory)
+          print('Dear human, saved model directory did not existed. I created it for you ')
+      path = directory + file_name
+      print("=> saving model as best agent in '{}'".format(path))
+      torch.save(self.state_dict(), path)
 
-  def load_agent(self,path):
-     print("=> loading model from '{}'".format(path))
-     return torch.load(path)
-
-
-
+  def load_agent(self, path):
+      print("=> loading model from '{}'".format(path))
+      self.load_state_dict(torch.load(path))
