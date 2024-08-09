@@ -21,11 +21,11 @@ Build one single environment and wrap it with an hystory wrapper **HistoryWrappe
 """
 
 # making the environment
-def make_env(gym_id, seed, idx, capture_video, run_name):
+def make_env(gym_id, seed, idx, capture_video, run_name, beta):
     def thunk():
         env = gym.make(gym_id)
         env = gym.wrappers.RecordEpisodeStatistics(env)
-        env = HistoryWrapper(env, 4, 0.4, True)
+        env = HistoryWrapper(env, 4, beta, True)
         if capture_video:
             if idx == 0:
               #record video every ten episodes
@@ -41,9 +41,9 @@ def make_env(gym_id, seed, idx, capture_video, run_name):
 """## Create parallel environments  🌍 🦐"""
 
 # vectorize environment
-def vectorize_env(gym_id, seed, capture_video, run_name, num_envs):
+def vectorize_env(gym_id, seed, capture_video, run_name, num_envs, beta):
   envs = gym.vector.SyncVectorEnv(
-        [make_env(gym_id, seed + i, i, capture_video, run_name) for i in range(num_envs)]
+        [make_env(gym_id, seed + i, i, capture_video, run_name, beta) for i in range(num_envs)]
   )
   assert isinstance(envs.single_action_space, gym.spaces.Box), \
   "only continuous action space as Box is supported"
