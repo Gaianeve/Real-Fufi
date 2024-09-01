@@ -16,6 +16,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import time
+from wrappers import HistoryWrapper
 
 """## Annealing
 Takes care of annealing, AKA decreasing the learning rate, if requested
