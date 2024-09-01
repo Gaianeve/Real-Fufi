@@ -77,6 +77,7 @@ class Agent(nn.Module):
           layer_init(nn.Linear(64, np.prod(envs.single_action_space.shape)), std=0.01),
       )
       self.actor_logstd = nn.Parameter(torch.zeros(1, np.prod(envs.single_action_space.shape)))
+      print('shape not', print(self.actor_logstd.shape))
       #learn log of standard dev
       
   ## keep in mind that x are the observations
@@ -84,7 +85,9 @@ class Agent(nn.Module):
       return self.critic(x)
 
   def get_action_and_value(self, x, action=None):
+      print('shape in', x.shape)
       action_mean = self.actor_mean(x)
+      print('shape_out', action_mean.shape)
       action_logstd = self.actor_logstd.expand_as(action_mean) #match dimention of action mean
         
       if self.use_sde:
