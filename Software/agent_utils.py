@@ -187,8 +187,8 @@ def PPO_train_agent(batch_size, update_epochs, minibatch_size, clip_coef, norm_a
 
 """
 
-def evaluate_agent(gym_id, seed, run_name, device, agent_v,\
-                   num_episodes = 10, step_evaluation = 500, eval_with_video = True, beta):
+def evaluate_agent(gym_id, seed, run_name, device, agent_v,beta,\
+                   num_episodes = 10, step_evaluation = 500, eval_with_video = True):
   # make a brand new environment and record the video
   env = vectorize_env(gym_id, seed, eval_with_video, run_name, 1, beta) 
 '''                     
