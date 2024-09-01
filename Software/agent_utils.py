@@ -191,7 +191,7 @@ def evaluate_agent(gym_id, seed, run_name, device, agent_v,beta,\
                    num_episodes = 10, step_evaluation = 500, eval_with_video = True):
   # make a brand new environment and record the video
   env = vectorize_env(gym_id, seed, eval_with_video, run_name, 1, beta) 
-'''                     
+  '''                     
   env = gym.make(gym_id)
   env = gym.wrappers.RecordEpisodeStatistics(env)
   env = HistoryWrapper(env, 4, beta, True)
@@ -200,7 +200,7 @@ def evaluate_agent(gym_id, seed, run_name, device, agent_v,beta,\
   env.seed(seed)
   env.action_space.seed(seed)
   env.observation_space.seed(seed)
-'''
+  '''
   #initialize storage lists
   obs = torch.zeros((step_evaluation, 1) + env.observation_space.shape).to(device)
   actions = torch.zeros((step_evaluation, 1) + env.action_space.shape).to(device)
