@@ -28,9 +28,9 @@ def make_env(gym_id, seed, idx, capture_video, run_name, beta):
         env = HistoryWrapper(env, 4, beta, True)
         if capture_video:
             if idx == 0:
-              #record video every ten episodes
+              #record video every 500 episodes
                 env = gym.wrappers.RecordVideo(env, f"videos/{run_name}", \
-                                               episode_trigger = lambda x: x % 10 == 0)
+                                               episode_trigger = lambda x: x % 500 == 0)
         env.seed(seed)
         env.action_space.seed(seed)
         env.observation_space.seed(seed)
