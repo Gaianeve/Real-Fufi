@@ -40,7 +40,7 @@ def get_default_hyperparameters_and_names():
       capture_video =True,
 
       #hyperparameters
-      beta = 0.3
+      beta = 0.3,
       lr = 0.00025,
       seed = 1,
       total_timesteps = 1000000,
