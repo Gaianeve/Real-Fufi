@@ -35,16 +35,17 @@ def get_default_hyperparameters_and_names():
       cuda =True,
 
       #W&B setup
-      wandb_project_name ="Fufino",
+      wandb_project_name ="The_Real_Fufino_weep",
       wandb_entity =None,
-      capture_video =False,
+      capture_video =True,
 
       #hyperparameters
-      lr = 1.5e-4,
+      beta = 0.3
+      lr = 0.00025,
       seed = 1,
       total_timesteps = 1000000,
-      num_envs = 8,
-      num_steps = 512,
+      num_envs = 4,
+      num_steps = 128,
       anneal_lr = True,
       gae =True,
       gamma=0.99,
@@ -85,6 +86,8 @@ def parse_args(default_config):
         nargs="?", const=True, help="weather to capture videos of the agent performances (check out `videos` folder)")
 
     # Algorithm specific arguments and hyperparamenters
+    parser.add_argument("--beta", type=int, default=0.3,
+        help="weight of continuity cost")
     parser.add_argument("--learning-rate", type=float, default= default_config.lr,
         help="the learning rate of the optimizer")
     parser.add_argument("--seed", type=int, default= default_config.seed,
@@ -165,10 +168,10 @@ def train_main(config):
   device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
   # env setup
-  envs = vectorize_env(args.gym_id, args.seed, args.capture_video, run_name, args.num_envs)
-
+  envs = vectorize_env(args.gym_id, args.seed, args.capture_video, run_name, args.num_envs, args.beta)
+  
   # Agent setup
-  agent = Agent(envs).to(device)
+  agent = Agent(envs, use_sde = True).to(device)
   #agent.print_summary(envs)
   optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
   scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'max')
