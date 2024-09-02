@@ -29,8 +29,8 @@ def get_default_hyperparameters_and_names():
   default_config = SimpleNamespace(
 
       #cute names
-      exp_name = "Fufi_adventures",
-      gym_id = "Fufi-v0",
+      exp_name = "The_Real_Fufi_adventures",
+      gym_id = "TheRealFufi-v0",
       torch_deterministic =True,
       cuda =True,
 
