@@ -43,7 +43,7 @@ def get_default_hyperparameters_and_names():
       beta = 0.3,
       lr = 0.00025,
       seed = 1,
-      total_timesteps = 500000,
+      total_timesteps = 50000,
       num_envs = 4,
       num_steps = 128,
       anneal_lr = True,
