@@ -43,7 +43,7 @@ def get_default_hyperparameters_and_names():
       beta = 0.3,
       lr = 0.00025,
       seed = 1,
-      total_timesteps = 1000000,
+      total_timesteps = 500000,
       num_envs = 4,
       num_steps = 128,
       anneal_lr = True,
@@ -221,7 +221,7 @@ def train_main(config):
 
             sum_episodes = sum_episodes + item["r"]
             writer.add_scalar("charts/total_episodic_returns", sum_episodes, global_step)
-            wandb.log({"sum_episodes": sum_episodes})
+            wandb.log({"sum_episodes": sum_episodes/1000000})
 
     # general advantages estimation
     returns, advantages = GAE(args.gae, args.gae_lambda, args.gamma, agent,\
