@@ -35,7 +35,7 @@ def get_default_hyperparameters_and_names():
       cuda =True,
 
       #W&B setup
-      wandb_project_name ="The_Real_Fufino_weep",
+      wandb_project_name ="The_Real_Fufino_sweep",
       wandb_entity =None,
       capture_video =True,
 
