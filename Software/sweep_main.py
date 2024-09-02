@@ -221,7 +221,7 @@ def train_main(config):
 
             sum_episodes = sum_episodes + item["r"]
             writer.add_scalar("charts/total_episodic_returns", sum_episodes, global_step)
-            wandb.log({"sum_episodes": sum_episodes/1000000})
+            wandb.log({"sum_episodes": sum_episodes})
 
     # general advantages estimation
     returns, advantages = GAE(args.gae, args.gae_lambda, args.gamma, agent,\
