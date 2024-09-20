@@ -191,7 +191,7 @@ def evaluate_agent(gym_id, seed, device, agent_v,beta,\
                    num_episodes = 10, step_evaluation = 500, eval_with_video = True):
                        
   # make a brand new environment and record the video
-  env = vectorize_env(gym_id, seed, eval_with_video, evaluation_video, 1, beta) 
+  env = vectorize_env(gym_id, seed, eval_with_video, 'evaluation_video', 1, beta) 
   
   #initialize storage lists
   obs = torch.zeros((step_evaluation, 1) + env.observation_space.shape).to(device)
