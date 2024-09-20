@@ -187,11 +187,13 @@ def PPO_train_agent(batch_size, update_epochs, minibatch_size, clip_coef, norm_a
 
 """
 
-def evaluate_agent(gym_id, seed, device, agent_v,beta,\
+
+def evaluate_agent(agent_v,gym_id, seed, device, beta,\
                    num_episodes = 10, step_evaluation = 500, eval_with_video = True):
                        
   # make a brand new environment and record the video
-  env = vectorize_env(gym_id, seed, eval_with_video, 'evaluation_video', 1, beta) 
+  evaluation_video = f'video_evaluation'
+  env = vectorize_env(gym_id, seed, eval_with_video, evaluation_video, 1, beta) 
   
   #initialize storage lists
   obs = torch.zeros((step_evaluation, 1) + env.observation_space.shape).to(device)
@@ -230,4 +232,3 @@ def evaluate_agent(gym_id, seed, device, agent_v,beta,\
   ep_return = torch.tensor(ep_return)
   ep_mean, ep_std = torch.mean(ep_return).item(), torch.std(ep_return).item()
   return ep_mean, ep_std
-
